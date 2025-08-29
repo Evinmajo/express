@@ -40,7 +40,7 @@ exports.signup = async (req,res)=>{
   const hash = bcrypt.hashSync(password,salt);
 
   const newUser = {
-    firstname : username,
+    firstname : userName,
     email:email,
     password:hash
   }
@@ -57,4 +57,46 @@ exports.signup = async (req,res)=>{
   } catch (error) {
     console.log(`Error While Signup`,error);
   }
+}
+
+exports.signin = async (req,res)=>{
+ try {
+   let  body = req.body;
+   let email = body.email;
+   if(!email){
+        return res.status(400).json({
+           success:false,
+            message:"Email required" 
+        })
+    }
+    const password = body.password;
+    if(!password){
+        return res.status(400).json({
+            success:false,
+            message:"Password Required"
+        })
+    }
+    const userData = await users.findOne({email:email});
+    if(!userData){
+       return res.status(400).json({
+            success:false,
+            message:"email not registered"
+        })
+    }
+    const passwordCheck = await bcrypt.compareSync(password,userData.password)
+    if(passwordCheck){
+      return res.status(200).json({
+            success:true,
+            message:"login successful"
+        })
+    }else {
+      return res.status(400).json({
+            success:false,
+            message:"login failed"
+        })
+    }
+ } catch (error) {
+  console.log(error);
+  
+ }
 }
